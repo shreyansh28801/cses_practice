@@ -1,2 +1,4 @@
 /bin/program
 /bin/program.dSYM/
+*.bin
+*.prob
