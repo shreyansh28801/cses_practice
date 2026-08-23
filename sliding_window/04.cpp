@@ -1,107 +1,108 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define int long long int
-#define mod 1000000007
-#define endl "\n"
-#define fio                           \
-    ios_base::sync_with_stdio(false); \
-    cin.tie(NULL);
+using ll = long long;
 
-template <typename T>
-istream &operator>>(istream &input, vector<T> &v)
+struct Stack
 {
-    for (auto &i : v)
-        cin >> i;
-    return input;
-}
+    vector<ll> val;
+    vector<ll> pref;
 
-template <typename T>
-ostream &operator<<(ostream &output, vector<T> &v)
-{
-    for (auto &i : v)
-        cout << i << " ";
-    return output;
-}
-
-void fu(int cnt[], int x)
-{
-    for (int i = 0; i < 31; i++)
+    inline void push(ll x)
     {
-        if (x & (1LL << i))
-            cnt[i]++;
+        val.push_back(x);
+
+        if (pref.empty())
+            pref.push_back(x);
+        else
+            pref.push_back(pref.back() | x);
     }
+
+    inline void pop()
+    {
+        val.pop_back();
+        pref.pop_back();
+    }
+
+    inline ll top()
+    {
+        return val.back();
+    }
+
+    inline ll getOR()
+    {
+        return pref.empty() ? 0 : pref.back();
+    }
+
+    inline bool empty()
+    {
+        return val.empty();
+    }
+};
+
+inline void pushQueue(Stack &in, ll x)
+{
+    in.push(x);
 }
 
-void fu1(int cnt[], int x, int &or_sum)
+inline void popQueue(Stack &in, Stack &out)
 {
-    for (int i = 0; i < 31; i++)
+    if (out.empty())
     {
-        if (x & (1LL << i))
+        while (!in.empty())
         {
-            cnt[i]--;
+            ll x = in.top();
+            in.pop();
 
-            if (cnt[i] == 0)
-                or_sum ^= (1LL << i);
+            out.push(x);
         }
     }
+
+    out.pop();
 }
 
-int32_t main()
+int main()
 {
-    fio;
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     int n, k;
     cin >> n >> k;
 
-    int x, a, b, c;
+    ll x, a, b, c;
     cin >> x >> a >> b >> c;
 
-    int bitMap[31] = {};
+    Stack in, out;
 
-    int or_sum = x;
+    ll cur = x;
 
     // First window
-    int prev = x;
-
-    fu(bitMap, x);
-
-    for (int i = 1; i < k; i++)
+    for (int i = 0; i < k; ++i)
     {
-        int curr = (a * prev + b) % c;
+        pushQueue(in, cur);
 
-        or_sum |= curr;
-        fu(bitMap, curr);
-
-        prev = curr;
+        cur = (a * cur + b) % c;
     }
 
-    int ans = or_sum;
-
-    int toSubtractLastElementOfWindow = x;
+    ll ans = in.getOR() | out.getOR();
 
     // Remaining windows
-    for (int i = 1; i <= n - k; i++)
+    for (int i = k; i < n; ++i)
     {
-        int curr = (a * prev + b) % c;
+        // Remove oldest element
+        popQueue(in, out);
 
-        // Add new element
-        or_sum |= curr;
-        fu(bitMap, curr);
+        // Add newest element
+        pushQueue(in, cur);
 
-        // Remove old element
-        fu1(bitMap, toSubtractLastElementOfWindow, or_sum);
+        // OR of current window
+        ans ^= (in.getOR() | out.getOR());
 
-        // Generate next outgoing element
-        toSubtractLastElementOfWindow =
-            (a * toSubtractLastElementOfWindow + b) % c;
-
-        prev = curr;
-
-        ans ^= or_sum;
+        // Generate next element
+        cur = (a * cur + b) % c;
     }
 
-    cout << ans << endl;
+    cout << ans << '\n';
 
     return 0;
 }
