@@ -1,5 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
 
 class SegTree
 {
@@ -139,32 +137,3 @@ public:
         return query(1, 0, size - 1, l, r);
     }
 };
-
-int main()
-{
-    int n, q;
-    cin >> n >> q;
-
-    vector<long long> a(n);
-
-    for (int i = 0; i < n; i++)
-        cin >> a[i];
-
-    SegTree st(n);
-
-    st.build_recursive(a);
-
-    while (q--)
-    {
-        int l, r;
-        cin >> l >> r;
-
-        // Convert 1-based input to 0-based
-        l--;
-        r--;
-
-        cout << st.query(l, r) << '\n';
-    }
-
-    return 0;
-}
